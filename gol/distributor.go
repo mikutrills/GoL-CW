@@ -9,18 +9,27 @@ type distributorChannels struct {
 	ioInput    <-chan uint8
 }
 
+// create an empty 2D world function - a slice
+func makeSlice(p Params, height int) [][]byte {
+	newSlice := make([][]byte, height)
+	for i := 0; i < height; i++ {
+		newSlice[i] = make([]byte, p.ImageWidth)
+	}
+	return newSlice
+}
+
 // distributor divides the work between workers and interacts with other goroutines.
 func distributor(p Params, c distributorChannels) {
 
 	// TODO: Create a 2D slice to store the world.
-	world := make([][]uint8, 0)
-	turn := 0
+	world := make([][]byte, p.ImageHeight)
+	for i := 0; i < p.ImageHeight; i++ {
+		world[i] = make([]byte, p.ImageWidth)
+		world := makeSlice(p, p.ImageHeight)
+	}
 
 	// TODO: Execute all turns of the Game of Life.
-	turn := 0
-	for turn < p.Turns {
-		turn++
-	}
+
 	// TODO: Report the final state using FinalTurnCompleteEvent.
 
 	// Make sure that the Io has finished any output before exiting.
