@@ -22,12 +22,21 @@ func makeSlice(p Params, height int) [][]byte {
 func distributor(p Params, c distributorChannels) {
 
 	// TODO: Create a 2D slice to store the world.
-	world := make([][]byte, p.ImageHeight)
-	for i := 0; i < p.ImageHeight; i++ {
-		world[i] = make([]byte, p.ImageWidth)
-		world := makeSlice(p, p.ImageHeight)
-	}
+	world := makeSlice(p, p.ImageHeight) //use the makeslice fx just created above
 
+	for y := 0; y < p.ImageHeight; y++ {
+		for x := 0; x < p.ImageWidth; x++ {
+			val := <- c.ioInput
+			//if val != 0 {
+			//	fmt.Println(x, y)
+			//}
+			world[y][x] = val
+			}
+		}
+		turn := 0
+
+
+	}
 	// TODO: Execute all turns of the Game of Life.
 
 	// TODO: Report the final state using FinalTurnCompleteEvent.
