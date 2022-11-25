@@ -14,9 +14,60 @@ type distributorChannels struct {
 	ioInput    <-chan uint8
 }
 
+func worker(p Params, finalWorld [][]uint8, workerStartX int, workerEndX int, workerStartY int, workerEndY int, workerChannel chan<- [][]uint8, wrapper int) {
+	workerWorld := makematrix(workerEndY-workerStartY, workerEndX)
+	//fmt.Println("FinalWorld b4 Worker", finalWorld)
+	//fmt.Println(workerStartX, workerEndX, workerStartY, workerEndY)
+	//fmt.Println("Worker len", len(workerWorld))
+	//fmt.Println(workerWorld)
+
+	//count := 0
+	for y := workerStartY; y < workerEndY; y++ {
+		//fmt.Println("y", y)
+		for x := workerStartX; x < workerEndX; x++ {
+			//fmt.Println("x", x)
+			AliveCellsCount := aliveCount(x, y, finalWorld, wrapper)
+			//fmt.Println("Alive Cell", AliveCellsCount)
+
+			if finalWorld[y][x] == 255 {
+				workerWorld[y-workerStartY][x] = 255
+				if AliveCellsCount > 3 {
+					//set state of final world here
+					workerWorld[y-workerStartY][x] = 0
+				} else if AliveCellsCount < 2 {
+					workerWorld[y-workerStartY][x] = 0
+				}
+				//} else if AliveCellsCount == 2 || AliveCellsCount == 3 {
+				//	workerWorld[y-workerStartY][x] = 255
+				//} else {
+				//	workerWorld[y-workerStartY][x] = 255
+				//}
+
+			}
+
+			if finalWorld[y][x] == 0 {
+				if AliveCellsCount == 3 {
+					workerWorld[y-workerStartY][x] = 255
+				} else {
+					workerWorld[y-workerStartY][x] = 0
+				}
+			}
+
+			//workerWorld[y][x] = newColor
+			//fmt.Println(count)
+			//workerWorld[count][x] = newColor
+
+		}
+		//count++
+		//}
+	}
+	//fmt.Println("Worker before Channel", workerWorld)
+	workerChannel <- workerWorld
+
+}
 func distributor(p Params, c distributorChannels) {
 	// TODO: Create a 2D slice to store the world.
-	c.ioCommand <- ioInput
+	c.ioCommand <- ioInput //req to read in pgm file
 	fp := fmt.Sprintf("%vx%v", p.ImageWidth, p.ImageHeight)
 	c.ioFilename <- fp
 	finalWorld := world(p.ImageHeight, p.ImageWidth)
@@ -26,7 +77,11 @@ func distributor(p Params, c distributorChannels) {
 	// Populating world with image
 	for y := 0; y < p.ImageHeight; y++ {
 		for x := 0; x < p.ImageWidth; x++ {
-			finalWorld[y][x] = <-c.ioInput
+			val := <-c.ioInput
+			if val != 0 {
+				finalWorld[y][x] = val
+			}
+			// 	finalWorld[y][x] = <-c.ioInput
 		}
 	}
 
@@ -107,65 +162,6 @@ func aliveCount(i int, j int, tempWorld [][]uint8, wrapper int) uint8 {
 
 	}
 	return count
-}
-
-func worker(p Params, finalWorld [][]uint8, workerStartX int, workerEndX int, workerStartY int, workerEndY int, workerChannel chan<- [][]uint8, wrapper int) {
-	workerWorld := makematrix(workerEndY-workerStartY, workerEndX)
-	//fmt.Println("FinalWorld b4 Worker", finalWorld)
-	//fmt.Println(workerStartX, workerEndX, workerStartY, workerEndY)
-	//fmt.Println("Woekr len", len(workerWorld))
-	//fmt.Println(workerWorld)
-	//remove this
-	// make new world if live in old set alive in new
-	/*for y := 0; y < workerEndY-workerStartY; y++ {
-		for x := 0; x < workerEndX; x++ {
-			fmt.Println("workerxVal", x, "WorkeryVal", y)
-			workerWorld[y][x] = finalWorld[y][x]
-		}
-	}*/
-	//count := 0
-	for y := workerStartY; y < workerEndY; y++ {
-		//fmt.Println("y", y)
-		for x := workerStartX; x < workerEndX; x++ {
-			//fmt.Println("x", x)
-			AliveCellsCount := aliveCount(x, y, finalWorld, wrapper)
-			//fmt.Println("Alive Cell", AliveCellsCount)
-
-			if finalWorld[y][x] == 255 {
-				workerWorld[y-workerStartY][x] = 255
-				if AliveCellsCount > 3 {
-					//set state of final world here
-					workerWorld[y-workerStartY][x] = 0
-				} else if AliveCellsCount < 2 {
-					workerWorld[y-workerStartY][x] = 0
-				}
-				//} else if AliveCellsCount == 2 || AliveCellsCount == 3 {
-				//	workerWorld[y-workerStartY][x] = 255
-				//} else {
-				//	workerWorld[y-workerStartY][x] = 255
-				//}
-
-			}
-
-			if finalWorld[y][x] == 0 {
-				if AliveCellsCount == 3 {
-					workerWorld[y-workerStartY][x] = 255
-				} else {
-					workerWorld[y-workerStartY][x] = 0
-				}
-			}
-
-			//workerWorld[y][x] = newColor
-			//fmt.Println(count)
-			//workerWorld[count][x] = newColor
-
-		}
-		//count++
-		//}
-	}
-	//fmt.Println("Worker before Channel", workerWorld)
-	workerChannel <- workerWorld
-
 }
 
 func makematrix(height int, width int) [][]uint8 {

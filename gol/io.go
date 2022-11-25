@@ -146,3 +146,10 @@ func startIo(p Params, c ioChannels) {
 		}
 	}
 }
+
+/*func localController() {
+	server := flag.String("server", "127.0.0.1:8030", "IP to connect to server")
+	client, _ := rpc.Dial("tcp", *server)
+	defer client.Close()
+	response :=
+}*/
