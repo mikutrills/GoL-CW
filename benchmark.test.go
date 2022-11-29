@@ -4,13 +4,19 @@ import (
 	"fmt"
 	"os"
 	"testing"
+
 	"uk.ac.bris.cs/gameoflife/gol"
 )
 
+//turns
 const benchLength = 1000
+
+//varthreadNum := [...]int{3,5,6,7,9,10,11,12,13,14,15}
 
 func BenchmarkGol(b *testing.B) {
 	for threads := 1; threads <= 16; threads++ {
+		//bitwise to check if power of 2
+		//1,2,4,8,16
 		os.Stdout = nil // Disable all program output apart from benchmark results
 		p := gol.Params{
 			Turns:       benchLength,
@@ -30,3 +36,6 @@ func BenchmarkGol(b *testing.B) {
 		})
 	}
 }
+
+//go run golang.org/x/perf/cmd/benchstat -csv results.out | tee results.csv
+//go test -run ^$ -timeout 9999m -bench . -benchtime 1x -count 5 | tee results.out
